@@ -254,11 +254,15 @@ sub zone_line {
   my ($l) = @_;
   my ($ZONE, $name, $gmtoff, $rules, $format, $until) = split(m/\s+/, $l, 6);
   # We ignore any zone line that has a definite until (end) time that
-  # is in the past.
+  # is in the past.  We warn on a zone line that has a definite util
+  # time that is in the future.
   if (defined $until) {
-    my $until_year = ($until =~ m/^(\d+)/)[0];
-    if ($until_year >= $current_year) {
-      die "until $until not handled";
+    my ($until_year, $until_month, $until_day, $until_hour) = split(m/\s+/, $until, 4);
+    if ($until_year > $current_year or
+          $until_year == $current_year && (month_from_name($until_month) > $current_month or
+                                           (month_from_name($until_month) == $current_month && $until_day >= $current_day))) {
+      warn "until $until not handled";
+      push(@problem, "Ignored until $until in Zone $name.");
     }
     return;
   }
@@ -425,6 +429,12 @@ INIT {
   %mon_from_name = map { $mon_to_name[$_] => $_ } (0..$#mon_to_name);
   @dow_to_name = qw(Sun Mon Tue Wed Thu Fri Sat);
   %dow_from_name= map { $dow_to_name[$_] => $_ } (0..$#dow_to_name);
+}
+
+sub month_from_name {
+  my $month = $mon_from_name{$_[0]};
+  defined $month or die "unknown month $_[0]";
+  return $month;
 }
 
 sub on_to_day_of_month {
