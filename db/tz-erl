@@ -285,7 +285,7 @@ sub zone_line {
   if (scalar(@rules) == 0) {
     # No active rules, use base rule.
     my $rule0 = $rule_base{$rules}->[1];
-    $name1 = zonename($format, $rule0->[RULE_LETTERS], undef);
+    $name1 = zonename($format, $rule0->[RULE_LETTERS], 0);
     $name2 = undef;
     $rule1 = $rule2 = RULE_NULL;
   } elsif (scalar(@rules) == 1) {
@@ -293,7 +293,7 @@ sub zone_line {
     # being observed
     print STDERR Data::Dump::dump(\@rules), "\n";
     die "one rule for $name";
-    $name1 = zonename($format, $rules[0]->[RULE_LETTERS], undef);
+    $name1 = zonename($format, $rules[0]->[RULE_LETTERS], 0);
     $name2 = undef;
     $rule1 = $rule2 = RULE_NULL;
   } else { # 2 rules
@@ -344,7 +344,7 @@ sub zone_line {
 
 sub zonename {
   my ($format, $letter, $dst) = @_;
-  if (defined($dst) && $format =~ m,/,) {
+  if ($format =~ m,/,) {
     my @format = split(m,/,, $format);
     return $format[$dst];
   } else {
